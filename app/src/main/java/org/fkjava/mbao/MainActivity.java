@@ -1,19 +1,16 @@
 package org.fkjava.mbao;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
-import android.support.constraint.Guideline;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,102 +19,145 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 查找布局
-        final ConstraintLayout layout = super.findViewById(R.id.layout2);
+        // 初始化商品列表的显示
+        initArticles();
+    }
 
-        // 记录上一个View的id，用于设置每个view的间隔,如果是0则表示连接到布局管理器上面
-        int viewId = 0;
+    public void clickUserButton(View view) {
+        // 如果已经登录，则跳转到用户的个人信息页面，显示订单、优惠券、修改用户信息。
+        // 没有登录的时候应该跳转到登录页面
+        Intent loginIntent = new Intent(MainActivity.this
+                , LoginActivity.class);
+        super.startActivity(loginIntent);
+    }
 
+    // 通过一个方法来初始化所有的商品
+    @SuppressLint("ResourceType")
+    private void initArticles() {
         for (int i = 1; i <= 20; i++) {
-            // 创建图片
+
+            int viewId = i - 1;
+
+            /*// 1.找到布局，通过布局的id能够非常容易定位到布局
+            ConstraintLayout layout = super.findViewById(R.id.article_item_layout);
+
+            // 2.创建组件对象，并且设置组件对象的内容
             ImageView imageView = new ImageView(MainActivity.this);
-            imageView.setId(i);//id不能从0开始
-            imageView.setImageDrawable(MainActivity.super.getDrawable(R.drawable.fkjava));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            imageView.setId(i);//最小id从1开始
+            imageView.setImageDrawable(super.getDrawable(R.drawable.fkjava));
+            layout.addView(imageView);
 
-            MainActivity.this.addView(viewId, layout, imageView, 180, 200, 0, 10);
+            // 3.创建约束集，里面包含一堆的连接
+            ConstraintSet constraintSet = new ConstraintSet();
+            // 克隆布局，把布局的属性放入约束集里面
+            constraintSet.clone(layout);
 
-            // 创建标题
-            TextView titleView = new TextView(MainActivity.this);
-            titleView.setId(1000 + i);// id不能重复
-            titleView.setText("《疯狂Java讲义（第4版）》--最畅销的Java入门教材，全面支援函数式编程、模块化开发");
-            titleView.setEllipsize(TextUtils.TruncateAt.END);//尾部放一个省略号
-            titleView.setMaxLines(2);//最多两行
-            titleView.setLines(2);//显示两行
-            MainActivity.this.addView(viewId, layout, titleView, 900, 85, 150, 10);
+            // 把imageView和布局连接起来
 
+            // 把imageView的左边和布局的左边连接起来
+            // app:layout_constraintStart_toStartOf="@id/article_item_layout"
+            constraintSet.connect(imageView.getId(), ConstraintSet.START, viewId, ConstraintSet.START);
+            // app:layout_constraintTop_toTopOf="@id/article_item_layout"
+            if (viewId == 0) {
+                // 第一次运行的时候，参考布局的上边
+                constraintSet.connect(imageView.getId(), ConstraintSet.TOP, layout.getId(), ConstraintSet.TOP);
+            } else {
+                // 第二次以及之后，要参考前一个组件的下边
+                constraintSet.connect(imageView.getId(), ConstraintSet.TOP, viewId, ConstraintSet.BOTTOM);
+            }
 
-            // 显示画线价格
-            TextView price = new TextView(MainActivity.this);
-            price.setId(2000 + i);
-            price.setText("￥1999222.99");
-            price.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//增加删除线显示
-            // 宽度为0表示根据内容自动设置宽度
-            MainActivity.this.addView(layout, price, 0, 50, imageView, 20, 120);
+            // 指定图片的高度和宽度
+            //android:layout_width="84dp"
+            //android:layout_height="68dp"
+            constraintSet.constrainWidth(imageView.getId(), 150);
+            constraintSet.constrainHeight(imageView.getId(), 150);
 
-            // 显示折扣加
-            TextView discountPrice = new TextView(MainActivity.this);
-            discountPrice.setId(3000 + i);
-            discountPrice.setText("￥999.99");
-            discountPrice.setTextColor(Color.RED);
-            discountPrice.getPaint().setFlags(Paint.FAKE_BOLD_TEXT_FLAG);//加粗
-            //MainActivity.this.addView(viewId, layout, discountPrice, 200, 50, 330, 95);
-            MainActivity.this.addView(layout, discountPrice, 0, 50, price, 10, 0);
+            // 指定图片的外边距
+            //android:layout_marginStart="0dp"
+            //android:layout_marginTop="0dp"
+            constraintSet.setMargin(imageView.getId(), ConstraintSet.START, 0);
+            constraintSet.setMargin(imageView.getId(), ConstraintSet.TOP, 30);
 
-            // 添加购物车按钮
-            ImageView btn = new ImageView(this);
-            btn.setId(4000 + i);
-            btn.setImageDrawable(super.getDrawable(R.drawable.cart));
-            MainActivity.this.addView(layout, btn, 60, 60, discountPrice, 10, 0);
+            // 4.应用约束集到布局
+            constraintSet.applyTo(layout);*/
 
-            // 修改viewId，记录本地循环的组件的id，用于把下一个对象放到当前组件的后面
-            viewId = i;
+            ImageView imageView = new ImageView(MainActivity.this);
+            imageView.setId(i);//最小id从1开始
+            imageView.setImageDrawable(super.getDrawable(R.drawable.fkjava));
+            this.addView(imageView, 0, 30, 150, 150, viewId, ConstraintSet.START, ConstraintSet.BOTTOM);
+
+            TextView titleView = new TextView(this);
+            titleView.setId(1000 + i);//id不能重复
+            titleView.setText("《疯狂Java讲义（第4版）》");
+            this.addView(titleView, 0, 0, 500, 100, imageView.getId(), ConstraintSet.END, ConstraintSet.TOP);
+
+            // Paint表示画笔，负责画图
+            TextView priceView = new TextView(this);
+            priceView.setId(2000 + i);
+            priceView.setText("￥99999.99");
+            priceView.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//增加删除线显示
+            // 宽度为0，表示按照内容自动缩放组件的大小
+            this.addView(priceView, 0, 0, 0, 50, titleView.getId(), ConstraintSet.START, ConstraintSet.BOTTOM);
+
+            TextView discountPriceView = new TextView(this);
+            discountPriceView.setId(3000 + i);
+            discountPriceView.setText("￥99.99");
+            discountPriceView.setTextColor(Color.RED);//把字体改为红色
+            discountPriceView.getPaint().setFlags(Paint.FAKE_BOLD_TEXT_FLAG);//加粗
+            this.addView(discountPriceView, 0, 0, 0, 50, priceView.getId(), ConstraintSet.END, ConstraintSet.TOP);
+
         }
     }
 
-    // 把新的视图，放到原本视图的右边
-    private void addView(ConstraintLayout layout, View view, int width, int height, View referenceView, int left, int top) {
-        layout.addView(view);
-        ConstraintSet cs = new ConstraintSet();
-        cs.clone(layout);
-        cs.constrainWidth(view.getId(), width);
-        cs.constrainHeight(view.getId(), height);
-        cs.connect(view.getId(), ConstraintSet.START, referenceView.getId(), ConstraintSet.END, left);
-        cs.connect(view.getId(), ConstraintSet.TOP, referenceView.getId(), ConstraintSet.TOP, top);
-        cs.applyTo(layout);
-    }
+    /**
+     * @param view     要添加的视图组件对象
+     * @param start    左外边距
+     * @param top      上外边距
+     * @param width    组件的宽度
+     * @param height   组件的高度
+     * @param viewId   参考、引用那个视图组件
+     * @param startRef 左边参考viewId的START还是END
+     * @param topRef   上边参考viewId的TOP或者BOTTOM
+     */
+    private void addView(View view, int start, int top, int width, int height, int viewId, int startRef, int topRef) {
+        // 1.找到布局，通过布局的id能够非常容易定位到布局
+        ConstraintLayout layout = super.findViewById(R.id.article_item_layout);
 
-    private void addView(int viewId, ConstraintLayout layout, View view, int width, int height, int leftMargin, int topMargin) {
-        //-----------------------------------------------
 
-
-        // 把图片加入布局中
         layout.addView(view);
 
-        // 创建约束
-        ConstraintSet cs = new ConstraintSet();
-        // 克隆布局属性
-        cs.clone(layout);
+        // 3.创建约束集，里面包含一堆的连接
+        ConstraintSet constraintSet = new ConstraintSet();
+        // 克隆布局，把布局的属性放入约束集里面
+        constraintSet.clone(layout);
 
-        // 设置布局属性中对象的宽度和高度
-        cs.constrainHeight(view.getId(), height);
-        cs.constrainWidth(view.getId(), width);
+        // 把imageView和布局连接起来
 
-        // 连接约束
-        cs.connect(view.getId(), ConstraintSet.START, layout.getId(), ConstraintSet.START);
-
+        // 把imageView的左边和布局的左边连接起来
+        // app:layout_constraintStart_toStartOf="@id/article_item_layout"
+        constraintSet.connect(view.getId(), ConstraintSet.START, viewId, startRef);
+        // app:layout_constraintTop_toTopOf="@id/article_item_layout"
         if (viewId == 0) {
-            cs.connect(view.getId(), ConstraintSet.TOP, ConstraintLayout.LayoutParams.PARENT_ID, ConstraintSet.TOP);
+            // 第一次运行的时候，参考布局的上边
+            constraintSet.connect(view.getId(), ConstraintSet.TOP, layout.getId(), ConstraintSet.TOP);
         } else {
-            cs.connect(view.getId(), ConstraintSet.TOP, viewId, ConstraintSet.BOTTOM);
+            // 第二次以及之后，要参考前一个组件的下边
+            constraintSet.connect(view.getId(), ConstraintSet.TOP, viewId, topRef);
         }
-        // 做外边距
-        cs.setMargin(view.getId(), ConstraintSet.START, leftMargin);
-        // 上外边距
-        cs.setMargin(view.getId(), ConstraintSet.TOP, topMargin);
-        // 应用布局
-        cs.applyTo(layout);
 
-        //-----------------------------------------------
+        // 指定图片的高度和宽度
+        //android:layout_width="84dp"
+        //android:layout_height="68dp"
+        constraintSet.constrainWidth(view.getId(), width);
+        constraintSet.constrainHeight(view.getId(), height);
+
+        // 指定图片的外边距
+        //android:layout_marginStart="0dp"
+        //android:layout_marginTop="0dp"
+        constraintSet.setMargin(view.getId(), ConstraintSet.START, start);
+        constraintSet.setMargin(view.getId(), ConstraintSet.TOP, top);
+
+        // 4.应用约束集到布局
+        constraintSet.applyTo(layout);
     }
 }
