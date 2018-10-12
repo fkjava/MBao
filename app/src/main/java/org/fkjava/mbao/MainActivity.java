@@ -8,9 +8,18 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import org.fkjava.mbao.domain.Article;
+import org.fkjava.mbao.domain.IndexPage;
+
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,9 +43,34 @@ public class MainActivity extends AppCompatActivity {
     // 通过一个方法来初始化所有的商品
     @SuppressLint("ResourceType")
     private void initArticles() {
-        for (int i = 1; i <= 20; i++) {
+        Callable<IndexPage> callable = new Callable<IndexPage>() {
+            @Override
+            public IndexPage call() throws Exception {
 
-            int viewId = i - 1;
+                IndexPage page = RemoveData.getIndexPage();
+                return page;
+            }
+        };
+        FutureTask<IndexPage> futureTask = new FutureTask<>(callable);
+        Thread thread = new Thread(futureTask);
+        thread.start();
+
+        IndexPage page = null;
+        try {
+            page = futureTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e("网络操作", "获取首页数据失败:" + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+        if (page == null) {
+            return;
+        }
+
+        List<Article> articles = page.getArticles();
+
+        for (Article article : articles) {
+
+            int viewId = article.getId() - 1;
 
             /*// 1.找到布局，通过布局的id能够非常容易定位到布局
             ConstraintLayout layout = super.findViewById(R.id.article_item_layout);
@@ -82,29 +116,29 @@ public class MainActivity extends AppCompatActivity {
             constraintSet.applyTo(layout);*/
 
             ImageView imageView = new ImageView(MainActivity.this);
-            imageView.setId(i);//最小id从1开始
-            imageView.setImageDrawable(super.getDrawable(R.drawable.fkjava));
-            this.addView(imageView, 0, 30, 150, 150, viewId, ConstraintSet.START, ConstraintSet.BOTTOM);
+            imageView.setId(article.getId());//最小id从1开始
+            imageView.setImageDrawable(MainActivity.super.getDrawable(R.drawable.fkjava));
+            MainActivity.this.addView(imageView, 0, 30, 150, 150, viewId, ConstraintSet.START, ConstraintSet.BOTTOM);
 
-            TextView titleView = new TextView(this);
-            titleView.setId(1000 + i);//id不能重复
-            titleView.setText("《疯狂Java讲义（第4版）》");
-            this.addView(titleView, 0, 0, 500, 100, imageView.getId(), ConstraintSet.END, ConstraintSet.TOP);
+            TextView titleView = new TextView(MainActivity.this);
+            titleView.setId(1000 + article.getId());//id不能重复
+            titleView.setText(article.getTitle());
+            MainActivity.this.addView(titleView, 0, 0, 900, 90, imageView.getId(), ConstraintSet.END, ConstraintSet.TOP);
 
             // Paint表示画笔，负责画图
-            TextView priceView = new TextView(this);
-            priceView.setId(2000 + i);
-            priceView.setText("￥99999.99");
+            TextView priceView = new TextView(MainActivity.this);
+            priceView.setId(2000 + article.getId());
+            priceView.setText("￥"+String.valueOf(article.getPrice()));
             priceView.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//增加删除线显示
             // 宽度为0，表示按照内容自动缩放组件的大小
-            this.addView(priceView, 0, 0, 0, 50, titleView.getId(), ConstraintSet.START, ConstraintSet.BOTTOM);
+            MainActivity.this.addView(priceView, 0, 0, 0, 50, titleView.getId(), ConstraintSet.START, ConstraintSet.BOTTOM);
 
-            TextView discountPriceView = new TextView(this);
-            discountPriceView.setId(3000 + i);
-            discountPriceView.setText("￥99.99");
+            TextView discountPriceView = new TextView(MainActivity.this);
+            discountPriceView.setId(3000 + article.getId());
+            discountPriceView.setText("￥" + String.valueOf(article.getDiscountPrice()));
             discountPriceView.setTextColor(Color.RED);//把字体改为红色
             discountPriceView.getPaint().setFlags(Paint.FAKE_BOLD_TEXT_FLAG);//加粗
-            this.addView(discountPriceView, 0, 0, 0, 50, priceView.getId(), ConstraintSet.END, ConstraintSet.TOP);
+            MainActivity.this.addView(discountPriceView, 0, 0, 0, 50, priceView.getId(), ConstraintSet.END, ConstraintSet.TOP);
 
         }
     }
