@@ -1,14 +1,16 @@
 package org.fkjava.mbao;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,11 +19,20 @@ import org.fkjava.mbao.domain.Article;
 import org.fkjava.mbao.domain.IndexPage;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 public class MainActivity extends AppCompatActivity {
+
+    // 使用匿名内部类的方式，创建一个Handler实例，并重写handleMessage方法
+    // 其他线程通过此Handler对象发送Message过来，就可以实现在UI线程更新视图了
+    private Handler promptHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("错误提示")
+                    .setMessage("无法获取数据，请检查网络！")
+                    .show();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,28 +54,58 @@ public class MainActivity extends AppCompatActivity {
     // 通过一个方法来初始化所有的商品
     @SuppressLint("ResourceType")
     private void initArticles() {
-        Callable<IndexPage> callable = new Callable<IndexPage>() {
+        // 启动一个线程
+        Thread thread = new Thread(new Runnable() {
             @Override
-            public IndexPage call() throws Exception {
+            public void run() {
 
-                IndexPage page = RemoveData.getIndexPage();
-                return page;
+                try {
+                    // 远程获取数据
+                    final IndexPage page = RemoteData.getIndexPage();
+                    // 把数据通过runOnUiThread方法传递给UI线程，更新UI
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            processData(page);
+                        }
+                    });
+                } catch (Throwable e) {
+
+                    // 子线程禁止更新UI，需要把UI更新操作提交给UI线程来执行
+                    // 可以通过Handler、view.post、runOnUiThread等方式提交给UI线程
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//
+//                            new AlertDialog.Builder(MainActivity.this)
+//                                    .setTitle("错误提示")
+//                                    .setMessage("无法获取数据，请检查网络！")
+//                                    .show();
+//                        }
+//                    });
+
+//                    View view = MainActivity.super.findViewById(R.id.article_item_layout);
+//                    view.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            new AlertDialog.Builder(MainActivity.this)
+//                                    .setTitle("错误提示")
+//                                    .setMessage("无法获取数据，请检查网络！")
+//                                    .show();
+//                        }
+//                    });
+
+
+                    promptHandler.sendEmptyMessage(500);
+
+                    e.printStackTrace();
+                }
             }
-        };
-        FutureTask<IndexPage> futureTask = new FutureTask<>(callable);
-        Thread thread = new Thread(futureTask);
+        });
         thread.start();
+    }
 
-        IndexPage page = null;
-        try {
-            page = futureTask.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e("网络操作", "获取首页数据失败:" + e.getLocalizedMessage());
-            e.printStackTrace();
-        }
-        if (page == null) {
-            return;
-        }
+    private void processData(IndexPage page) {
 
         List<Article> articles = page.getArticles();
 
@@ -117,7 +158,10 @@ public class MainActivity extends AppCompatActivity {
 
             ImageView imageView = new ImageView(MainActivity.this);
             imageView.setId(article.getId());//最小id从1开始
-            imageView.setImageDrawable(MainActivity.super.getDrawable(R.drawable.fkjava));
+            //imageView.setImageDrawable(MainActivity.super.getDrawable(R.drawable.fkjava));
+            //Bitmap bitmap = RemoteData.getImage("/article/" + article.getImage());
+            //imageView.setImageBitmap(bitmap);
+            RemoteData.setImage(imageView, "/article/" + article.getImage());
             MainActivity.this.addView(imageView, 0, 30, 150, 150, viewId, ConstraintSet.START, ConstraintSet.BOTTOM);
 
             TextView titleView = new TextView(MainActivity.this);
@@ -128,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             // Paint表示画笔，负责画图
             TextView priceView = new TextView(MainActivity.this);
             priceView.setId(2000 + article.getId());
-            priceView.setText("￥"+String.valueOf(article.getPrice()));
+            priceView.setText("￥" + String.valueOf(article.getPrice()));
             priceView.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);//增加删除线显示
             // 宽度为0，表示按照内容自动缩放组件的大小
             MainActivity.this.addView(priceView, 0, 0, 0, 50, titleView.getId(), ConstraintSet.START, ConstraintSet.BOTTOM);

@@ -65,8 +65,10 @@
 
     <!-- 嵌套一个滚动视图 -->
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -145,4 +147,23 @@
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
 
+    <Button
+        android:id="@+id/previousPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginBottom="5dp"
+        android:text="上一页"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:id="@+id/nextPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="0dp"
+        android:text="下一页"
+        app:layout_constraintStart_toEndOf="@id/previousPage"
+        app:layout_constraintTop_toTopOf="@id/previousPage"/>
 </android.support.constraint.ConstraintLayout>
