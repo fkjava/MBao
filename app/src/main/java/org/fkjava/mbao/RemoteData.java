@@ -96,7 +96,6 @@ public class RemoteData {
      * @param name
      */
     public static void setImage(final ImageView imageView, String name) {
-
         Request request = new Request.Builder()
                 .method("GET", null)
                 .url(BASE_URL + "/static/fkjava/images" + name)
