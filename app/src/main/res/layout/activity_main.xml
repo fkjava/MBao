@@ -6,25 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-<!--    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />-->
+    <!--    <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello World!"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />-->
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_marginStart="5dp"
+        android:onClick="clickUserButton"
         app:layout_constraintStart_toEndOf="@+id/imageView2"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/user"
-        android:onClick="clickUserButton"/>
+        app:srcCompat="@drawable/user" />
 
     <ImageView
         android:id="@+id/imageView2"
@@ -83,9 +83,9 @@
         <!-- 如果要找到此布局，可以通过R.id.article_item_layout来找到布局 -->
         <!-- 找到布局以后，需要动态往布局里面添加内容，写个循环 -->
         <android.support.constraint.ConstraintLayout
+            android:id="@+id/article_item_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/article_item_layout">
+            android:layout_height="match_parent">
 
             <!--增加各种组件-->
             <!-- layout_constraintTop_toTopOf : 组件的上边和article_item_layout和上边连接起来 -->
@@ -153,9 +153,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
         android:layout_marginBottom="5dp"
+        android:onClick="previousPage"
         android:text="上一页"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/nextPage"
@@ -163,7 +164,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginTop="0dp"
+        android:onClick="nextPage"
         android:text="下一页"
         app:layout_constraintStart_toEndOf="@id/previousPage"
-        app:layout_constraintTop_toTopOf="@id/previousPage"/>
+        app:layout_constraintTop_toTopOf="@id/previousPage" />
 </android.support.constraint.ConstraintLayout>

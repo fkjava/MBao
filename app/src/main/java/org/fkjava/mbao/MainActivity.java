@@ -13,6 +13,7 @@ import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.fkjava.mbao.domain.Article;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private IndexPage page;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +54,46 @@ public class MainActivity extends AppCompatActivity {
         super.startActivity(loginIntent);
     }
 
+
+    public void previousPage(View view) {
+        if (page.getNumber() > 0) {
+            this.getPage(page.getNumber() - 1);
+        }
+    }
+
+    public void nextPage(View view) {
+        if (page.getNumber() < page.getTotalPages() - 1) {
+            this.getPage(page.getNumber() + 1);
+        }
+    }
+
+
+    private void getPage(final int number) {
+        // 启动一个线程
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    // 远程获取数据
+                    page = RemoteData.getIndexPage(number);
+                    // 把数据通过runOnUiThread方法传递给UI线程，更新UI
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            processData(page);
+                        }
+                    });
+                } catch (Throwable e) {
+                    promptHandler.sendEmptyMessage(500);
+
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+
     // 通过一个方法来初始化所有的商品
     @SuppressLint("ResourceType")
     private void initArticles() {
@@ -61,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     // 远程获取数据
-                    final IndexPage page = RemoteData.getIndexPage();
+                    page = RemoteData.getIndexPage(0);
                     // 把数据通过runOnUiThread方法传递给UI线程，更新UI
                     runOnUiThread(new Runnable() {
                         @Override
@@ -106,6 +149,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processData(IndexPage page) {
+        // 清除掉滚动视图中，现有的所有组件，用于增加新的组件
+        // 由于组件是添加到ConstraintLayout里面的，所以清除ConstraintLayout中的所有视图
+        ConstraintLayout layout = super.findViewById(R.id.article_item_layout);
+        layout.removeAllViews();
+
+        ScrollView scrollView = super.findViewById(R.id.scrollView);
+        // 滚动到最顶部
+        scrollView.scrollTo(0, 0);
 
         List<Article> articles = page.getArticles();
 

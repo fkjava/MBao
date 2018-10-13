@@ -29,11 +29,11 @@ public class RemoteData {
     //private static final String BASE_URL = "http://192.168.0.99:8080/ec";
     private static final String BASE_URL = "http://192.168.10.222:8080/ec";
 
-    public static IndexPage getIndexPage() throws IOException {
+    public static IndexPage getIndexPage(int number) throws IOException {
 
         // 创建请求
         Request request = new Request.Builder()//
-                .url(BASE_URL + "/commerce/indexJson.action")//从服务器获取数据
+                .url(BASE_URL + "/commerce/indexJson.action?number=" + number)//从服务器获取数据
                 .method("GET", null)//以GET方式获取数据，没有请求体
                 .build();//构建请求对象
         // 创建Call对象，用于异步执行HTTP请求
